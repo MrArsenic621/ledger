@@ -34,27 +34,5 @@ class JournalEntry(BaseModel):
         return total_debits == total_credits
 
 
-class AssetType(str, Enum):
-    PHYSICAL = "physical"
-    FINANCIAL = "financial"
-    INVESTMENT = "investment"
-    PROPERTY = "property"
-    VEHICLE = "vehicle"
+# Remove Asset class from here entirely
 
-
-class AssetStatus(str, Enum):
-    ACTIVE = "active"
-    INACTIVE = "inactive"
-    SOLD = "sold"
-    DEPRECIATED = "depreciated"
-
-
-class Asset(BaseModel):
-    id: str
-    name: str
-    type: AssetType
-    original_cost: Decimal
-    account: Account
-    currency: Currency
-    status: AssetStatus
-    acquisition_date: datetime

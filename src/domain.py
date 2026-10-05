@@ -69,5 +69,6 @@ class Asset(BaseModel):
     original_cost: Decimal
     acquisition_date: datetime
     type: AssetType
+    currency: Currency
     status: AssetStatus
 

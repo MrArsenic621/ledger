@@ -1,11 +1,13 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 
-from src.accounting import JournalEntry, PostingType
+from src.accounting import JournalEntry, Posting, PostingType
 from src.domain import (
     Account,
     AccountType,
     Asset,
+    AssetStatus,
+    AssetType,
     Currency,
     Transaction,
     TransactionType,
@@ -149,13 +151,104 @@ class LifecycleService:
         pass
 
     @staticmethod
-    def aquisition(
-        asset: Asset, amount: Decimal, currency: Currency, timestamp: datetime
-    ):
-        pass
+    def acquire(
+        name: str,
+        cost: Decimal,
+        account: Account,
+        type: AssetType,
+        timestamp: datetime,
+    ) -> tuple[Asset, Account]:
+        if cost <= 0:
+            raise ValueError("Acquisition cost must be positive.")
+
+        if account.balance < cost:
+            raise ValueError("Insufficient funds in the account for acquisition.")
+
+        asset_account = Account(
+            id=f"asset-account-{datetime.now(UTC).timestamp()}",
+            name=f"{name} Account",
+            balance=Decimal("0.00"),
+            currency=account.currency,
+            type=AccountType.ASSET,
+        )
+
+        asset = Asset(
+            id=f"asset-{datetime.now(UTC).timestamp()}",
+            name=name,
+            original_cost=cost,
+            account_id=asset_account.id,
+            acquisition_date=timestamp,
+            type=type,
+            status=AssetStatus.ACTIVE,
+            currency=asset_account.currency,
+        )
+
+        debit_posting = Posting(
+            account_id=asset_account.id,
+            amount=cost,
+            type=PostingType.DEBIT,
+        )
+        credit_posting = Posting(
+            account_id=account.id,
+            amount=cost,
+            type=PostingType.CREDIT,
+        )
+        journal_entry = JournalEntry(
+            id=f"je-{datetime.now(UTC).timestamp()}",
+            timestamp=timestamp,
+            postings=[debit_posting, credit_posting],
+            description=f"Acquisition of asset {name}",
+        )
+
+        try:
+            AccountingService.apply_entry(
+                journal_entry, {account.id: account, asset_account.id: asset_account}
+            )
+        except ValueError as e:
+            raise ValueError(f"Failed to apply journal entry: {e}")
+
+        return asset, asset_account
 
     @staticmethod
-    def disposal(
-        asset: Asset, amount: Decimal, currency: Currency, timestamp: datetime
-    ):
-        pass
+    def dispose(
+        asset: Asset,
+        disposal_amount: Decimal,
+        funding_account: Account,
+        asset_account: Account,
+        expense_account: Account,
+    ) -> None:
+        if asset.status != AssetStatus.ACTIVE:
+            raise ValueError("Only active assets can be disposed.")
+
+        credit_posting = Posting(
+            account_id=asset_account.id,
+            amount=asset.original_cost,
+            type=PostingType.CREDIT,
+        )
+        debit_posting = Posting(
+            account_id=funding_account.id,
+            amount=disposal_amount,
+            type=PostingType.DEBIT,
+        )
+        expense_or_loss_posting = Posting(
+            account_id=expense_account.id,
+            amount=asset.original_cost - disposal_amount,
+            type=PostingType.DEBIT,
+        )
+        journal_entry = JournalEntry(
+            id=f"je-{datetime.now(UTC).timestamp()}",
+            timestamp=datetime.now(UTC),
+            postings=[debit_posting, credit_posting, expense_or_loss_posting],
+            description=f"Disposal of asset {asset.name}",
+        )
+
+        AccountingService.apply_entry(
+            journal_entry,
+            {
+                funding_account.id: funding_account,
+                asset_account.id: asset_account,
+                expense_account.id: expense_account,
+            },
+        )
+
+        asset.status = AssetStatus.SOLD
