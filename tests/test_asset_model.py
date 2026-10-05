@@ -16,7 +16,8 @@ def test_create_asset(usd):
         original_cost=Decimal("2000.00"),
         acquisition_date=acquisition_date,
         type=AssetType.PHYSICAL,
-        status=AssetStatus.ACTIVE
+        status=AssetStatus.ACTIVE,
+        currency=usd
     )
     
     assert asset.name == "MacBook Pro"
@@ -24,3 +25,4 @@ def test_create_asset(usd):
     assert asset.type == AssetType.PHYSICAL
     assert asset.status == AssetStatus.ACTIVE
     assert asset.acquisition_date == acquisition_date
+    assert asset.currency.code == "USD"
