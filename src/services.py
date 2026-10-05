@@ -54,3 +54,27 @@ class TransactionService:
         destination_account.balance += amount
 
         return (source_account, destination_account)
+
+
+class TransactionRepository:
+    def __init__(self):
+        self.transactions = []
+
+    def save(self, transaction: Transaction) -> None:
+        self.transactions.append(transaction)
+
+    def list_all(self) -> list[Transaction]:
+        return self.transactions
+
+    def get_summary(self) -> dict[str, float]:
+        return {
+            "total_income": sum(
+                t.amount for t in self.transactions if t.type == "income"
+            ),
+            "total_expense": sum(
+                t.amount for t in self.transactions if t.type == "expense"
+            ),
+            "net_balance": sum(
+                t.amount if t.type == "income" else -t.amount for t in self.transactions
+            ),
+        }
