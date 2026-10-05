@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
+from decimal import Decimal
 import pytest
 
-from src.domain import Account, Category, Currency, Transaction, TransactionType
+from src.domain import Account, AccountType, Category, Currency, Transaction, TransactionType
 
 
 def test_create_currency():
@@ -20,21 +21,22 @@ def test_create_category():
 
 def test_create_account():
     usd = Currency(code="USD", name="US Dollar", symbol="$")
-    account = Account(id="acc-1", name="Bank Account", balance=1000.0, currency=usd)
+    account = Account(id="acc-1", name="Bank Account", balance=Decimal("1000.00"), currency=usd, type=AccountType.ASSET)
     assert account.id == "acc-1"
     assert account.name == "Bank Account"
-    assert account.balance == 1000.0
+    assert account.balance == Decimal("1000.00")
     assert account.currency.code == "USD"
+    assert account.type == AccountType.ASSET
 
 
 def test_create_transaction_expense():
     usd = Currency(code="USD", name="US Dollar", symbol="$")
-    account = Account(id="acc-1", name="Bank Account", balance=1000.0, currency=usd)
+    account = Account(id="acc-1", name="Bank Account", balance=Decimal("1000.00"), currency=usd, type=AccountType.ASSET)
     category = Category(id="cat-1", name="Utilities", type="expense")
 
     tx = Transaction(
         id="tx-1",
-        amount=50.0,
+        amount=Decimal("50.00"),
         currency=usd,
         category=category,
         type=TransactionType.EXPENSE,
@@ -42,7 +44,7 @@ def test_create_transaction_expense():
         timestamp=datetime.now(timezone.utc),
     )
     assert tx.id == "tx-1"
-    assert tx.amount == 50.0
+    assert tx.amount == Decimal("50.00")
     assert tx.type == TransactionType.EXPENSE
     assert tx.account.id == "acc-1"
     assert tx.currency.code == "USD"

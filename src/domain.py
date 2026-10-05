@@ -41,7 +41,7 @@ class Account(BaseModel):
 
 class Transaction(BaseModel):
     id: str
-    amount: float
+    amount: Decimal
     currency: Currency
     category: Category
     type: TransactionType
