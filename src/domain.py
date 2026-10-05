@@ -48,3 +48,26 @@ class Transaction(BaseModel):
     account: Account
     timestamp: datetime
     description: str = None
+
+class AssetType(str, Enum):
+    PHYSICAL = "physical"
+    FINANCIAL = "financial"
+    INVESTMENT = "investment"
+    PROPERTY = "property"
+    VEHICLE = "vehicle"
+
+class AssetStatus(str, Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    SOLD = "sold"
+    DEPRECIATED = "depreciated"
+
+class Asset(BaseModel):
+    id: str
+    name: str
+    account_id: str
+    original_cost: Decimal
+    acquisition_date: datetime
+    type: AssetType
+    status: AssetStatus
+

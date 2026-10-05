@@ -1,7 +1,15 @@
 from datetime import datetime
+from decimal import Decimal
 
 from src.accounting import JournalEntry, PostingType
-from src.domain import Account, AccountType, Currency, Transaction, TransactionType
+from src.domain import (
+    Account,
+    AccountType,
+    Asset,
+    Currency,
+    Transaction,
+    TransactionType,
+)
 
 
 class TransactionService:
@@ -134,3 +142,20 @@ class AccountingService:
             )
 
         return is_balanced
+
+
+class LifecycleService:
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def aquisition(
+        asset: Asset, amount: Decimal, currency: Currency, timestamp: datetime
+    ):
+        pass
+
+    @staticmethod
+    def disposal(
+        asset: Asset, amount: Decimal, currency: Currency, timestamp: datetime
+    ):
+        pass
