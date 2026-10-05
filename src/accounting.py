@@ -34,5 +34,20 @@ class JournalEntry(BaseModel):
         return total_debits == total_credits
 
 
-# Remove Asset class from here entirely
+class LiabilityType(str, Enum):
+    LOAN = "loan"
+    CREDIT_CARD = "credit_card"
+    MORTGAGE = "mortgage"
+
+
+class Liability(BaseModel):
+    id: str
+    name: str
+    type: LiabilityType
+    currency: Currency
+    principal: Decimal
+    interest_rate: Decimal
+    balance: Decimal
+    next_payment_date: datetime
+
 
