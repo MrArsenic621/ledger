@@ -2,10 +2,10 @@ name: ci
 
 on:
   push:
-    branches: [main]
-    tags: ['v*.*.*']
+    branches: ["*"]
+    tags: ["v*.*.*"]
   pull_request:
-    branches: [main]
+    branches: ["main"]
 
 env:
   REGISTRY: ghcr.io
@@ -29,7 +29,8 @@ jobs:
 
   build-and-push:
     needs: test
-    if: github.event_name != 'pull_request'
+    # Only build and push if the push was triggered by a tag matching v*.*.*
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: read
