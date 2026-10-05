@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from enum import Enum
 
 from pydantic import BaseModel
@@ -22,10 +23,19 @@ class Category(BaseModel):
     type: str
 
 
+class AccountType(str, Enum):
+    ASSET = "asset"
+    EXPENSE = "expense"
+    INCOME = "income"
+    LIABILITY = "liability"
+    EQUITY = "equity"
+    REVENUE = "revenue"
+
 class Account(BaseModel):
     id: str
     name: str
-    balance: float
+    balance: Decimal
+    type: AccountType
     currency: Currency
 
 

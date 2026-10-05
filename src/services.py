@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from src.domain import Account, Currency, Transaction, TransactionType
+from src.accounting import JournalEntry, PostingType
+from src.domain import Account, AccountType, Currency, Transaction, TransactionType
 
 
 class TransactionService:
@@ -78,3 +79,31 @@ class TransactionRepository:
                 t.amount if t.type == "income" else -t.amount for t in self.transactions
             ),
         }
+
+
+class AccountService:
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def apply_entry(entry: JournalEntry, accounts: dict[str, Account]):
+        if not entry.is_balanced():
+            raise ValueError("Journal entry is not balanced.")
+
+        for posting in entry.postings:
+            account = accounts.get(posting.account_id)
+            if not account:
+                raise ValueError(f"Account {posting.account_id} not found.")
+
+
+
+            if account.type in [AccountType.ASSET, AccountType.EXPENSE]:
+                if posting.type == PostingType.DEBIT:
+                    account.balance += posting.amount
+                elif posting.type == PostingType.CREDIT:
+                    account.balance -= posting.amount
+            elif account.type in [AccountType.LIABILITY, AccountType.EQUITY, AccountType.REVENUE,AccountType.INCOME]:
+                if posting.type == PostingType.DEBIT:
+                    account.balance -= posting.amount
+                elif posting.type == PostingType.CREDIT:
+                    account.balance += posting.amount
