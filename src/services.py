@@ -81,7 +81,7 @@ class TransactionRepository:
         }
 
 
-class AccountService:
+class AccountingService:
     def __init__(self):
         pass
 
@@ -95,15 +95,42 @@ class AccountService:
             if not account:
                 raise ValueError(f"Account {posting.account_id} not found.")
 
-
-
             if account.type in [AccountType.ASSET, AccountType.EXPENSE]:
                 if posting.type == PostingType.DEBIT:
                     account.balance += posting.amount
                 elif posting.type == PostingType.CREDIT:
                     account.balance -= posting.amount
-            elif account.type in [AccountType.LIABILITY, AccountType.EQUITY, AccountType.REVENUE,AccountType.INCOME]:
+            elif account.type in [
+                AccountType.LIABILITY,
+                AccountType.EQUITY,
+                AccountType.REVENUE,
+                AccountType.INCOME,
+            ]:
                 if posting.type == PostingType.DEBIT:
                     account.balance -= posting.amount
                 elif posting.type == PostingType.CREDIT:
                     account.balance += posting.amount
+
+    @staticmethod
+    def verify_ledger_integrity(accounts: list[Account]) -> bool:
+        debit = 0
+        credit = 0
+
+        for account in accounts:
+            if account.type in [AccountType.ASSET, AccountType.EXPENSE]:
+                debit += account.balance
+            elif account.type in [
+                AccountType.LIABILITY,
+                AccountType.EQUITY,
+                AccountType.REVENUE,
+                AccountType.INCOME,
+            ]:
+                credit += account.balance
+
+        is_balanced = debit == credit
+        if not is_balanced:
+            raise ValueError(
+                f"Ledger integrity check failed: Total Debit ({debit}) != Total Credit ({credit})"
+            )
+
+        return is_balanced

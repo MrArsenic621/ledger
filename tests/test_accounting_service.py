@@ -2,7 +2,7 @@ from decimal import Decimal
 from datetime import datetime, timezone
 import pytest
 from src.accounting import JournalEntry, Posting, PostingType
-from src.services import AccountService
+from src.services import AccountingService
 from src.domain import Account, Currency, AccountType
 
 @pytest.fixture
@@ -29,7 +29,7 @@ def test_apply_balanced_entry(usd):
     # User to implement: AccountingService.apply_entry(entry, [acc_bank, acc_expense])
     # Mapping account IDs for the service to find
     accounts = {acc.id: acc for acc in [acc_bank, acc_expense]}
-    AccountService.apply_entry(entry, accounts)
+    AccountingService.apply_entry(entry, accounts)
     
     assert acc_bank.balance == Decimal("900.00")  # Asset Credit decreases
     assert acc_expense.balance == Decimal("100.00") # Expense Debit increases
