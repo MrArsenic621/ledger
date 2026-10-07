@@ -1,6 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
+from abc import ABC, abstractmethod
 
 from pydantic import BaseModel
 
@@ -32,22 +33,3 @@ class JournalEntry(BaseModel):
             p.amount for p in self.postings if p.type == PostingType.CREDIT
         )
         return total_debits == total_credits
-
-
-class LiabilityType(str, Enum):
-    LOAN = "loan"
-    CREDIT_CARD = "credit_card"
-    MORTGAGE = "mortgage"
-
-
-class Liability(BaseModel):
-    id: str
-    name: str
-    type: LiabilityType
-    currency: Currency
-    principal: Decimal
-    interest_rate: Decimal
-    balance: Decimal
-    next_payment_date: datetime
-
-

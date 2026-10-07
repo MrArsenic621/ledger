@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from src.accounting import JournalEntry, Posting, PostingType
+from src.accounting import JournalEntry, LiabilityType, Posting, PostingType
 from src.domain import (
     Account,
     AccountType,
@@ -252,3 +252,12 @@ class LifecycleService:
         )
 
         asset.status = AssetStatus.SOLD
+
+
+class LiabilityService:
+    def __intt__(self):
+        pass
+
+    @staticmethod
+    def calculate_amortization_schedule(liability, periods: int) -> list[JournalEntry]:
+        pass
