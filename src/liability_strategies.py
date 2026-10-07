@@ -31,6 +31,11 @@ class BorrowingConfig(BaseModel):
     settlement_date: datetime
 
 
+class LiabilityStatus(str, Enum):
+    ACTIVE = "active"
+    PAID = "paid"
+
+
 class Liability(BaseModel):
     id: str
     name: str
@@ -40,6 +45,7 @@ class Liability(BaseModel):
     account_id: str
     original_principal: Decimal
     config: LoanConfig | BNPLConfig | BorrowingConfig
+    status: LiabilityStatus = LiabilityStatus.ACTIVE
 
 
 class AmortizationStrategy(ABC):
@@ -87,7 +93,9 @@ class LoanStrategy(AmortizationStrategy):
             }
             schedule.append(payment)
             simulated_balance -= payment["principal"]
-            simulated_balance = round(simulated_balance, 4) # avoid infinite decimal tail
+            simulated_balance = round(
+                simulated_balance, 4
+            )  # avoid infinite decimal tail
         return schedule
 
     def is_fully_paid(self, liability: Liability) -> bool:

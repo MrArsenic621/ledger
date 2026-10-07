@@ -16,6 +16,7 @@ from src.liability_strategies import (
     BNPLConfig,
     BorrowingConfig,
     Liability,
+    LiabilityStatus,
     LiabilityStrategyFactory,
     LiabilityType,
     LoanConfig,
@@ -275,11 +276,11 @@ class LiabilityService:
         original_principal: Decimal,
         config: LoanConfig | BNPLConfig | BorrowingConfig,
         funding_account: Account,
-    ) -> Liability:
+    ) -> tuple[Liability, Account]:
         liability_account = Account(
             id=f"liability-account-{datetime.now(UTC).timestamp()}",
             name=name,
-            balance=balance,
+            balance=Decimal("0.00"),
             currency=currency,
             type=AccountType.LIABILITY,
         )
@@ -318,7 +319,7 @@ class LiabilityService:
             },
         )
 
-        return liability
+        return liability, liability_account
 
     @staticmethod
     def process_payment(
@@ -371,4 +372,4 @@ class LiabilityService:
             liability.balance += next_payment["principal"]
 
         if liability_strategy.is_fully_paid(liability):
-            liability.status = "PAID"
+            liability.status = LiabilityStatus.PAID
