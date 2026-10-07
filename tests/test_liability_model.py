@@ -16,6 +16,7 @@ def test_create_liability(usd):
         type=LiabilityType.LOAN,
         currency=usd,
         original_principal=Decimal("20000.00"),
+        account_id="acc-liab-1",
         balance=Decimal("20000.00"),
         config=config
     )

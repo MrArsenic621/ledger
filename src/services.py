@@ -12,6 +12,14 @@ from src.domain import (
     Transaction,
     TransactionType,
 )
+from src.liability_strategies import (
+    BNPLConfig,
+    BorrowingConfig,
+    Liability,
+    LiabilityStrategyFactory,
+    LiabilityType,
+    LoanConfig,
+)
 
 
 class TransactionService:
@@ -255,9 +263,112 @@ class LifecycleService:
 
 
 class LiabilityService:
-    def __intt__(self):
+    def __init__(self):
         pass
 
     @staticmethod
-    def calculate_amortization_schedule(liability, periods: int) -> list[JournalEntry]:
-        pass
+    def originate(
+        name: str,
+        type: LiabilityType,
+        currency: Currency,
+        balance: Decimal,
+        original_principal: Decimal,
+        config: LoanConfig | BNPLConfig | BorrowingConfig,
+        funding_account: Account,
+    ) -> Liability:
+        liability_account = Account(
+            id=f"liability-account-{datetime.now(UTC).timestamp()}",
+            name=name,
+            balance=balance,
+            currency=currency,
+            type=AccountType.LIABILITY,
+        )
+        liability = Liability(
+            id=f"liability-{datetime.now(UTC).timestamp()}",
+            name=name,
+            type=type,
+            currency=currency,
+            balance=balance,
+            account_id=liability_account.id,
+            original_principal=original_principal,
+            config=config,
+        )
+
+        debit_posting = Posting(
+            account_id=funding_account.id,
+            amount=original_principal,
+            type=PostingType.DEBIT,
+        )
+        credit_posting = Posting(
+            account_id=liability_account.id,
+            amount=original_principal,
+            type=PostingType.CREDIT,
+        )
+        journal_entry = JournalEntry(
+            id=f"je-{datetime.now(UTC).timestamp()}",
+            timestamp=datetime.now(UTC),
+            postings=[debit_posting, credit_posting],
+            description=f"Creating liability {liability.name}",
+        )
+        AccountingService.apply_entry(
+            journal_entry,
+            {
+                liability_account.id: liability_account,
+                funding_account.id: funding_account,
+            },
+        )
+
+        return liability
+
+    @staticmethod
+    def process_payment(
+        liability: Liability,
+        funding_account: Account,
+        expense_account: Account,
+        liability_account: Account,
+    ):
+        liability_strategy = LiabilityStrategyFactory.get_strategy(liability.type)
+        if liability_strategy.is_fully_paid(liability):
+            raise ValueError("Liability is already fully paid.")
+
+        next_payment = liability_strategy.calculate_next_payment(liability)
+
+        liability.balance -= next_payment["principal"]
+
+        principal_debit_posting = Posting(
+            account_id=liability_account.id,
+            amount=next_payment["principal"],
+            type=PostingType.DEBIT,
+        )
+        interest_debit_posting = Posting(
+            account_id=expense_account.id,
+            amount=next_payment["interest"],
+            type=PostingType.DEBIT,
+        )
+        credit_posting = Posting(
+            account_id=funding_account.id,
+            amount=next_payment["total_amount"],
+            type=PostingType.CREDIT,
+        )
+        journal_entry = JournalEntry(
+            id=f"je-{datetime.now(UTC).timestamp()}",
+            timestamp=datetime.now(UTC),
+            postings=[principal_debit_posting, interest_debit_posting, credit_posting],
+            description=f"Payment for liability {liability.name}",
+        )
+
+        try:
+            AccountingService.apply_entry(
+                journal_entry,
+                {
+                    liability.account_id: liability_account,
+                    funding_account.id: funding_account,
+                    expense_account.id: expense_account,
+                },
+            )
+        except Exception as e:
+            print(f"Error occurred while applying journal entry: {e}")
+            liability.balance += next_payment["principal"]
+
+        if liability_strategy.is_fully_paid(liability):
+            liability.status = "PAID"

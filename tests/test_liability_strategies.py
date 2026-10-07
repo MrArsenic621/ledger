@@ -29,7 +29,7 @@ def test_loan_strategy(usd):
     liability = Liability(
         id="loan-1", name="Car Loan", type=LiabilityType.LOAN,
         currency=usd, balance=Decimal("1000.00"), original_principal=Decimal("1000.00"),
-        config=config
+        account_id="acc-loan", config=config
     )
     strategy = LiabilityStrategyFactory.get_strategy(LiabilityType.LOAN)
     
@@ -52,7 +52,7 @@ def test_loan_strategy_edge_case(usd):
     liability = Liability(
         id="loan-1", name="Car Loan", type=LiabilityType.LOAN,
         currency=usd, balance=Decimal("50.00"), original_principal=Decimal("1000.00"),
-        config=config
+        account_id="acc-loan", config=config
     )
     strategy = LiabilityStrategyFactory.get_strategy(LiabilityType.LOAN)
     
@@ -65,7 +65,7 @@ def test_bnpl_strategy(usd):
     liability = Liability(
         id="bnpl-1", name="Phone", type=LiabilityType.BNPL,
         currency=usd, balance=Decimal("400.00"), original_principal=Decimal("400.00"),
-        config=config
+        account_id="acc-bnpl", config=config
     )
     strategy = LiabilityStrategyFactory.get_strategy(LiabilityType.BNPL)
     
@@ -86,7 +86,7 @@ def test_borrowing_strategy(usd):
     liability = Liability(
         id="borrow-1", name="Friend", type=LiabilityType.BORROWING,
         currency=usd, balance=Decimal("500.00"), original_principal=Decimal("500.00"),
-        config=config
+        account_id="acc-borrow", config=config
     )
     strategy = LiabilityStrategyFactory.get_strategy(LiabilityType.BORROWING)
     

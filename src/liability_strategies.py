@@ -37,6 +37,7 @@ class Liability(BaseModel):
     type: LiabilityType
     currency: Currency
     balance: Decimal
+    account_id: str
     original_principal: Decimal
     config: LoanConfig | BNPLConfig | BorrowingConfig
 
