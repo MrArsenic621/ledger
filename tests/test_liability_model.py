@@ -2,27 +2,25 @@ from datetime import datetime, timezone
 from decimal import Decimal
 import pytest
 from src.domain import Currency
-from src.accounting import Liability, LiabilityType
+from src.liability_strategies import Liability, LiabilityType, LoanConfig
 
 @pytest.fixture
 def usd():
     return Currency(code="USD", name="US Dollar", symbol="$")
 
 def test_create_liability(usd):
-    due_date = datetime(2026, 12, 31, tzinfo=timezone.utc)
+    config = LoanConfig(interest_rate=Decimal("0.05"), installment_amount=Decimal("400.00"), installments=60)
     liability = Liability(
         id="liab-1",
         name="Car Loan",
         type=LiabilityType.LOAN,
         currency=usd,
-        principal=Decimal("20000.00"),
-        interest_rate=Decimal("0.05"),
+        original_principal=Decimal("20000.00"),
         balance=Decimal("20000.00"),
-        next_payment_date=due_date
+        config=config
     )
     
     assert liability.name == "Car Loan"
-    assert liability.principal == Decimal("20000.00")
+    assert liability.original_principal == Decimal("20000.00")
     assert liability.balance == Decimal("20000.00")
     assert liability.type == LiabilityType.LOAN
-    assert liability.next_payment_date == due_date

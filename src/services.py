@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from src.accounting import JournalEntry, LiabilityType, Posting, PostingType
+from src.accounting import JournalEntry, Posting, PostingType
 from src.domain import (
     Account,
     AccountType,
